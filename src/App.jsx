@@ -258,20 +258,20 @@ function EnvelopeReader({ letter, onReveal, showDoneButton = false, onDone }) {
     setIsPlaying(true)
     setRippleKey((current) => current + 1)
     setPhase('breaking')
-    onReveal?.(letter.id)
 
     await wait(700)
     setPhase('opening')
 
-    await wait(1400)
+    await wait(650)
     setPhase('peek')
 
-    await wait(1200)
+    await wait(550)
     setPhase('reading')
+    onReveal?.(letter.id)
     setIsPlaying(false)
   }
 
-  const isEnvelopeOpen = phase === 'opening' || phase === 'peek' || phase === 'reading'
+  const isEnvelopeOpen = phase !== 'closed' && phase !== 'breaking'
   const isEnvelopeVanishing = phase === 'reading'
   const isPeekVisible = phase === 'peek' || phase === 'reading'
   const isLetterVisible = phase === 'reading'
@@ -303,6 +303,7 @@ function EnvelopeReader({ letter, onReveal, showDoneButton = false, onDone }) {
         <article
           className={`letter-sheet simple-letter staged-letter ${isLetterVisible ? 'visible' : ''}`}
           style={{ '--paper': design.paper, '--ink': design.ink, '--letter-font': design.fontFamily }}
+          aria-hidden={!isLetterVisible}
         >
           <div className="paper-texture" style={{ '--texture-overlay': design.textureOverlay, '--texture-size': design.textureSize }} />
           {letter.show_date ? <div className="letter-date">{new Date(letter.created_at).toLocaleDateString('ja-JP')}</div> : null}
