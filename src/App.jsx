@@ -246,15 +246,19 @@ function EnvelopeReader({ letter, onReveal, showDoneButton = false, onDone }) {
   }, [letter.id])
 
   useEffect(() => {
-    if (phase !== 'breaking') return undefined
+    if (phase === 'closed' || phase === 'reading') return undefined
 
-    const timers = [
-      window.setTimeout(() => setPhase('opening'), 700),
-      window.setTimeout(() => setPhase('peek'), 2100),
-      window.setTimeout(() => setPhase('reading'), 3300),
-    ]
+    const nextPhaseMap = {
+      breaking: { next: 'opening', delay: 700 },
+      opening: { next: 'peek', delay: 1400 },
+      peek: { next: 'reading', delay: 1200 },
+    }
 
-    return () => timers.forEach((timer) => window.clearTimeout(timer))
+    const step = nextPhaseMap[phase]
+    if (!step) return undefined
+
+    const timer = window.setTimeout(() => setPhase(step.next), step.delay)
+    return () => window.clearTimeout(timer)
   }, [phase])
 
   const handleSealTap = () => {
