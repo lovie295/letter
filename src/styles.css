@@ -1245,7 +1245,7 @@ textarea {
 
 .letter-message {
   min-height: 220px;
-  font-size: 1.18rem;
+  font-size: 1.08rem;
   color: color-mix(in srgb, var(--ink) 86%, #3c4f88 14%);
   white-space: pre-wrap;
   position: relative;

@@ -61,7 +61,7 @@ const defaultDraft = {
 }
 
 const MESSAGE_MAX_LENGTH = 500
-const LETTER_PAGE_SIZE = 100
+const LETTER_PAGE_SIZE = 200
 const DRAFT_STORAGE_KEY = 'letter-draft'
 const TREASURE_STORAGE_KEY = 'letter-treasure-box'
 const SESSION_STORAGE_KEY = 'letter-session-user'
@@ -208,7 +208,7 @@ function AnimatedLetterMessage({ message, active }) {
         const step = nextChar === '\n' ? 1 : 1
         return Math.min(characters.length, current + step)
       })
-    }, 95)
+    }, 70)
 
     return () => window.clearInterval(timer)
   }, [active, characters])
@@ -232,7 +232,11 @@ function AnimatedLetterMessage({ message, active }) {
   )
 }
 
-function EnvelopeReader({ letter, onReveal, showDoneButton = false, onDone }) {
+function StaticLetterMessage({ message }) {
+  return <div className="letter-message" aria-label={message}>{message}</div>
+}
+
+function EnvelopeReader({ letter, onReveal, showDoneButton = false, onDone, animateText = true }) {
   const [phase, setPhase] = useState('closed')
   const [rippleKey, setRippleKey] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -306,7 +310,11 @@ function EnvelopeReader({ letter, onReveal, showDoneButton = false, onDone }) {
           <div className="paper-texture" style={{ '--texture-overlay': design.textureOverlay, '--texture-size': design.textureSize }} />
           {letter.show_date ? <div className="letter-date">{new Date(letter.created_at).toLocaleDateString('ja-JP')}</div> : null}
           {letter.recipient_name && isFirstPage ? <div className="letter-recipient">{letter.recipient_name}</div> : null}
-          <AnimatedLetterMessage message={messagePages[currentPage] ?? ''} active={isLetterVisible} />
+          {animateText ? (
+            <AnimatedLetterMessage message={messagePages[currentPage] ?? ''} active={isLetterVisible} />
+          ) : (
+            <StaticLetterMessage message={messagePages[currentPage] ?? ''} />
+          )}
           {letter.sender_name && isLastPage ? <div className="letter-sign">{letter.sender_name}</div> : null}
         </article>
       </div>
@@ -372,7 +380,7 @@ function LetterView({ letter, onBackHome, onOpened, onStoreInTreasure }) {
       ) : null}
 
       <section className="receiver-shell minimal-receiver">
-        <EnvelopeReader letter={letter} onReveal={onOpened} showDoneButton onDone={() => setShowFinishedModal(true)} />
+        <EnvelopeReader letter={letter} onReveal={onOpened} showDoneButton onDone={() => setShowFinishedModal(true)} animateText />
       </section>
     </main>
   )
@@ -1103,7 +1111,7 @@ function CollectionView({ user, onBackHome, onLogout }) {
       {selectedLetter ? (
         <div className="modal-backdrop">
           <div className="collection-reader-modal">
-            <EnvelopeReader letter={selectedLetter} onReveal={(letterId) => setOpenedLetterId(letterId)} />
+            <EnvelopeReader letter={selectedLetter} onReveal={(letterId) => setOpenedLetterId(letterId)} animateText={false} />
 
             <div className="action-row modal-actions">
               <button
