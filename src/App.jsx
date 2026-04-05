@@ -61,7 +61,7 @@ const defaultDraft = {
 }
 
 const MESSAGE_MAX_LENGTH = 500
-const LETTER_PAGE_SIZE = 200
+const LETTER_PAGE_SIZE = 170
 const DRAFT_STORAGE_KEY = 'letter-draft'
 const TREASURE_STORAGE_KEY = 'letter-treasure-box'
 const SESSION_STORAGE_KEY = 'letter-session-user'
