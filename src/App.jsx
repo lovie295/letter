@@ -282,15 +282,11 @@ function EnvelopeReader({ letter, onReveal, showDoneButton = false, onDone }) {
         className={`envelope-stage staged-envelope ${isEnvelopeOpen ? 'opened' : ''} ${isEnvelopeVanishing ? 'vanishing' : ''}`}
         style={{ '--envelope': design.envelope, '--accent': design.accent }}
       >
-        <div className="envelope" aria-hidden="true">
+        <button className="envelope envelope-trigger" onClick={handleSealTap} type="button">
           <div className="envelope-flap" />
           <div className="envelope-body" />
-        </div>
-
-        <button className={`seal-button ${phase === 'breaking' ? 'broken' : ''}`} onClick={handleSealTap} type="button">
-          ✦
         </button>
-        {phase === 'breaking' ? <div key={rippleKey} className="seal-ripple" /> : null}
+        {phase === 'breaking' ? <div key={rippleKey} className="envelope-ripple" /> : null}
 
         <div className={`letter-peek-card ${isPeekVisible ? 'peek' : ''}`}>
           <div className="letter-peek-lines">
