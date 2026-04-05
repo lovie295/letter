@@ -239,6 +239,8 @@ function EnvelopeReader({ letter, onReveal, showDoneButton = false, onDone }) {
   const [currentPage, setCurrentPage] = useState(0)
   const design = useMemo(() => getDesignById(letter.design_id), [letter.design_id])
   const messagePages = useMemo(() => splitMessageIntoPages(letter.message), [letter.message])
+  const isFirstPage = currentPage === 0
+  const isLastPage = currentPage === messagePages.length - 1
   const hintText =
     phase === 'closed'
       ? 'シールをタップして開封する'
@@ -303,9 +305,9 @@ function EnvelopeReader({ letter, onReveal, showDoneButton = false, onDone }) {
         >
           <div className="paper-texture" style={{ '--texture-overlay': design.textureOverlay, '--texture-size': design.textureSize }} />
           {letter.show_date ? <div className="letter-date">{new Date(letter.created_at).toLocaleDateString('ja-JP')}</div> : null}
-          {letter.recipient_name ? <div className="letter-recipient">{letter.recipient_name}</div> : null}
+          {letter.recipient_name && isFirstPage ? <div className="letter-recipient">{letter.recipient_name}</div> : null}
           <AnimatedLetterMessage message={messagePages[currentPage] ?? ''} active={isLetterVisible} />
-          {letter.sender_name ? <div className="letter-sign">{letter.sender_name}</div> : null}
+          {letter.sender_name && isLastPage ? <div className="letter-sign">{letter.sender_name}</div> : null}
         </article>
       </div>
 
@@ -402,6 +404,8 @@ function ComposerView({
   const totalPages = messagePages.length
   const currentPreviewPage = Math.min(activePreviewPage, totalPages - 1)
   const previewText = messagePages[currentPreviewPage] ?? ''
+  const previewIsFirstPage = currentPreviewPage === 0
+  const previewIsLastPage = currentPreviewPage === totalPages - 1
   const canSeal =
     draft.message.trim().length >= 10 && draft.to.trim().length > 0 && draft.from.trim().length > 0
 
@@ -658,9 +662,9 @@ function ComposerView({
             >
               <div className="paper-texture" style={{ '--texture-overlay': selectedDesign.textureOverlay, '--texture-size': selectedDesign.textureSize }} />
               {draft.showDate ? <div className="letter-date">{new Date().toLocaleDateString('ja-JP')}</div> : null}
-              {draft.to ? <div className="letter-recipient">{draft.to}</div> : null}
+              {draft.to && previewIsFirstPage ? <div className="letter-recipient">{draft.to}</div> : null}
               <div className="letter-message preview-message">{previewText}</div>
-              {draft.from ? <div className="letter-sign">{draft.from}</div> : null}
+              {draft.from && previewIsLastPage ? <div className="letter-sign">{draft.from}</div> : null}
             </div>
             <div className="preview-page-indicator">
               {currentPreviewPage + 1}/{totalPages}
