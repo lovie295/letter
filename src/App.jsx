@@ -86,7 +86,10 @@ const COLLECTION_TEST_ITEMS = Array.from({ length: 15 }, (_, index) => ({
   id: `collection-test-${index + 1}`,
   recipient_name: '',
   sender_name: ['Rin', 'みかんより', 'ラーメン', 'haru', 'Sora'][index % 5],
-  message: 'これはコレクション画面の見え方を確認するためのダミー手紙です。',
+  message:
+    index === 0
+      ? 'これはコレクション画面の見え方を確認するための長めのダミー手紙です。少し長く書いて、二枚目、三枚目へどう続いていくかを見られるようにしています。読み返したときに、ページをめくるような感覚が残ると嬉しいです。落ち着いた夜に読み返しても、やわらかく受け止められるような言葉の量を入れています。まだ続きます。もう少しだけ文章を重ねて、100文字を越えたときの見え方、その先のページ送り、最後の締めまで確認できるようにしています。'
+      : 'これはコレクション画面の見え方を確認するためのダミー手紙です。',
   design_id: 'white:smooth:zen',
   show_date: false,
   created_at: new Date(2026, 3, 4 - (index % 5), 9, 0, 0).toISOString(),
@@ -223,16 +226,122 @@ function AnimatedLetterMessage({ message, active }) {
   )
 }
 
-function LetterView({ letter, onBackHome, onOpened, onStoreInTreasure }) {
-  const [opened, setOpened] = useState(false)
-  const [showFinishedModal, setShowFinishedModal] = useState(false)
+function EnvelopeReader({ letter, onReveal, showDoneButton = false, onDone }) {
+  const [phase, setPhase] = useState('closed')
+  const [rippleKey, setRippleKey] = useState(0)
+  const [currentPage, setCurrentPage] = useState(0)
   const design = useMemo(() => getDesignById(letter.design_id), [letter.design_id])
+  const messagePages = useMemo(() => splitMessageIntoPages(letter.message), [letter.message])
+  const hintText =
+    phase === 'closed'
+      ? 'シールをタップして開封する'
+      : phase === 'reading'
+        ? ''
+        : '開封しています…'
 
-  const handleOpen = () => {
-    if (opened) return
-    setOpened(true)
-    onOpened(letter.id)
+  useEffect(() => {
+    setPhase('closed')
+    setRippleKey(0)
+    setCurrentPage(0)
+  }, [letter.id])
+
+  useEffect(() => {
+    if (phase !== 'breaking') return undefined
+
+    const timers = [
+      window.setTimeout(() => setPhase('opening'), 700),
+      window.setTimeout(() => setPhase('peek'), 2100),
+      window.setTimeout(() => setPhase('reading'), 3300),
+    ]
+
+    return () => timers.forEach((timer) => window.clearTimeout(timer))
+  }, [phase])
+
+  const handleSealTap = () => {
+    if (phase !== 'closed') return
+    setRippleKey((current) => current + 1)
+    setPhase('breaking')
+    onReveal?.(letter.id)
   }
+
+  const isEnvelopeOpen = phase === 'opening' || phase === 'peek' || phase === 'reading'
+  const isEnvelopeVanishing = phase === 'reading'
+  const isPeekVisible = phase === 'peek' || phase === 'reading'
+  const isLetterVisible = phase === 'reading'
+
+  return (
+    <>
+      <div
+        className={`envelope-stage staged-envelope ${isEnvelopeOpen ? 'opened' : ''} ${isEnvelopeVanishing ? 'vanishing' : ''}`}
+        style={{ '--envelope': design.envelope, '--accent': design.accent }}
+      >
+        <div className="envelope" aria-hidden="true">
+          <div className="envelope-flap" />
+          <div className="envelope-body" />
+        </div>
+
+        <button className={`seal-button ${phase === 'breaking' ? 'broken' : ''}`} onClick={handleSealTap} type="button">
+          ✦
+        </button>
+        {phase === 'breaking' ? <div key={rippleKey} className="seal-ripple" /> : null}
+
+        <div className={`letter-peek-card ${isPeekVisible ? 'peek' : ''}`}>
+          <div className="letter-peek-lines">
+            <div className="peek-line" />
+            <div className="peek-line" />
+            <div className="peek-line" />
+          </div>
+        </div>
+
+        <article
+          className={`letter-sheet simple-letter staged-letter ${isLetterVisible ? 'visible' : ''}`}
+          style={{ '--paper': design.paper, '--ink': design.ink, '--letter-font': design.fontFamily }}
+        >
+          <div className="paper-texture" style={{ '--texture-overlay': design.textureOverlay, '--texture-size': design.textureSize }} />
+          {letter.show_date ? <div className="letter-date">{new Date(letter.created_at).toLocaleDateString('ja-JP')}</div> : null}
+          {letter.recipient_name ? <div className="letter-recipient">{letter.recipient_name}</div> : null}
+          <AnimatedLetterMessage message={messagePages[currentPage] ?? ''} active={isLetterVisible} />
+          {letter.sender_name ? <div className="letter-sign">{letter.sender_name}</div> : null}
+        </article>
+      </div>
+
+      <p className={`receiver-hint ${hintText ? '' : 'hidden'}`}>{hintText}</p>
+
+      {isLetterVisible && messagePages.length > 1 ? (
+        <div className="reader-pagination">
+          <button
+            className="ghost-button"
+            type="button"
+            disabled={currentPage === 0}
+            onClick={() => setCurrentPage((page) => Math.max(0, page - 1))}
+          >
+            前の紙
+          </button>
+          <div className="reader-page-indicator">
+            {currentPage + 1} / {messagePages.length}
+          </div>
+          <button
+            className="ghost-button"
+            type="button"
+            disabled={currentPage === messagePages.length - 1}
+            onClick={() => setCurrentPage((page) => Math.min(messagePages.length - 1, page + 1))}
+          >
+            次の紙
+          </button>
+        </div>
+      ) : null}
+
+      {showDoneButton && isLetterVisible ? (
+        <button className="secondary-button done-button" type="button" onClick={onDone}>
+          読み終えた
+        </button>
+      ) : null}
+    </>
+  )
+}
+
+function LetterView({ letter, onBackHome, onOpened, onStoreInTreasure }) {
+  const [showFinishedModal, setShowFinishedModal] = useState(false)
 
   const handleStoreInTreasure = () => {
     setShowFinishedModal(false)
@@ -257,32 +366,7 @@ function LetterView({ letter, onBackHome, onOpened, onStoreInTreasure }) {
       ) : null}
 
       <section className="receiver-shell minimal-receiver">
-        <div
-          className={`envelope-stage ${opened ? 'opened' : ''}`}
-          style={{ '--envelope': design.envelope, '--accent': design.accent }}
-        >
-          <button className="envelope" onClick={handleOpen} type="button">
-            <div className="envelope-flap" />
-            <div className="envelope-body">
-              <span>{opened ? '手紙を読んでいます' : 'タップして開封'}</span>
-            </div>
-          </button>
-
-          <article
-            className={`letter-sheet simple-letter ${opened ? 'visible' : ''}`}
-            style={{ '--paper': design.paper, '--ink': design.ink, '--letter-font': design.fontFamily }}
-          >
-            <div className="paper-texture" style={{ '--texture-overlay': design.textureOverlay, '--texture-size': design.textureSize }} />
-            {letter.show_date ? <div className="letter-date">{new Date(letter.created_at).toLocaleDateString('ja-JP')}</div> : null}
-            {letter.recipient_name ? <div className="letter-recipient">{letter.recipient_name}</div> : null}
-            <AnimatedLetterMessage message={letter.message} active={opened} />
-            {letter.sender_name ? <div className="letter-sign">{letter.sender_name}</div> : null}
-          </article>
-        </div>
-
-        <button className="secondary-button done-button" type="button" onClick={() => setShowFinishedModal(true)}>
-          読み終えた
-        </button>
+        <EnvelopeReader letter={letter} onReveal={onOpened} showDoneButton onDone={() => setShowFinishedModal(true)} />
       </section>
     </main>
   )
@@ -1011,47 +1095,7 @@ function CollectionView({ user, onBackHome, onLogout }) {
       {selectedLetter ? (
         <div className="modal-backdrop">
           <div className="collection-reader-modal">
-            <div
-              className={`envelope-stage collection-envelope-stage ${openedLetterId === selectedLetter.id ? 'opened' : ''}`}
-              style={{
-                '--envelope': getDesignById(selectedLetter.design_id).envelope,
-                '--accent': getDesignById(selectedLetter.design_id).accent,
-              }}
-            >
-              <button
-                className="envelope"
-                onClick={() => setOpenedLetterId(selectedLetter.id)}
-                type="button"
-              >
-                <div className="envelope-flap" />
-                <div className="envelope-body">
-                  <span>{openedLetterId === selectedLetter.id ? '手紙を読んでいます' : 'タップして開封'}</span>
-                </div>
-              </button>
-
-              <article
-                className={`letter-sheet simple-letter ${openedLetterId === selectedLetter.id ? 'visible' : ''}`}
-                style={{
-                  '--paper': getDesignById(selectedLetter.design_id).paper,
-                  '--ink': getDesignById(selectedLetter.design_id).ink,
-                  '--letter-font': getDesignById(selectedLetter.design_id).fontFamily,
-                }}
-              >
-                <div
-                  className="paper-texture"
-                  style={{
-                    '--texture-overlay': getDesignById(selectedLetter.design_id).textureOverlay,
-                    '--texture-size': getDesignById(selectedLetter.design_id).textureSize,
-                  }}
-                />
-                {selectedLetter.show_date ? (
-                  <div className="letter-date">{new Date(selectedLetter.created_at).toLocaleDateString('ja-JP')}</div>
-                ) : null}
-                {selectedLetter.recipient_name ? <div className="letter-recipient">{selectedLetter.recipient_name}</div> : null}
-                <AnimatedLetterMessage message={selectedLetter.message} active={openedLetterId === selectedLetter.id} />
-                {selectedLetter.sender_name ? <div className="letter-sign">{selectedLetter.sender_name}</div> : null}
-              </article>
-            </div>
+            <EnvelopeReader letter={selectedLetter} onReveal={(letterId) => setOpenedLetterId(letterId)} />
 
             <div className="action-row modal-actions">
               <button
