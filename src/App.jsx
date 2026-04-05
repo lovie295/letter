@@ -95,6 +95,12 @@ const COLLECTION_TEST_ITEMS = Array.from({ length: 15 }, (_, index) => ({
   created_at: new Date(2026, 3, 4 - (index % 5), 9, 0, 0).toISOString(),
 }))
 
+function wait(ms) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms)
+  })
+}
+
 function readJsonStorage(key, fallback) {
   try {
     const value = window.localStorage.getItem(key)
@@ -229,6 +235,7 @@ function AnimatedLetterMessage({ message, active }) {
 function EnvelopeReader({ letter, onReveal, showDoneButton = false, onDone }) {
   const [phase, setPhase] = useState('closed')
   const [rippleKey, setRippleKey] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
   const design = useMemo(() => getDesignById(letter.design_id), [letter.design_id])
   const messagePages = useMemo(() => splitMessageIntoPages(letter.message), [letter.message])
@@ -242,30 +249,26 @@ function EnvelopeReader({ letter, onReveal, showDoneButton = false, onDone }) {
   useEffect(() => {
     setPhase('closed')
     setRippleKey(0)
+    setIsPlaying(false)
     setCurrentPage(0)
   }, [letter.id])
 
-  useEffect(() => {
-    if (phase === 'closed' || phase === 'reading') return undefined
-
-    const nextPhaseMap = {
-      breaking: { next: 'opening', delay: 700 },
-      opening: { next: 'peek', delay: 1400 },
-      peek: { next: 'reading', delay: 1200 },
-    }
-
-    const step = nextPhaseMap[phase]
-    if (!step) return undefined
-
-    const timer = window.setTimeout(() => setPhase(step.next), step.delay)
-    return () => window.clearTimeout(timer)
-  }, [phase])
-
-  const handleSealTap = () => {
-    if (phase !== 'closed') return
+  const handleSealTap = async () => {
+    if (phase !== 'closed' || isPlaying) return
+    setIsPlaying(true)
     setRippleKey((current) => current + 1)
     setPhase('breaking')
     onReveal?.(letter.id)
+
+    await wait(700)
+    setPhase('opening')
+
+    await wait(1400)
+    setPhase('peek')
+
+    await wait(1200)
+    setPhase('reading')
+    setIsPlaying(false)
   }
 
   const isEnvelopeOpen = phase === 'opening' || phase === 'peek' || phase === 'reading'
