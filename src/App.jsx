@@ -687,16 +687,6 @@ function ComposerView({
 function LandingView({ sessionUser, onLogin, onCreateLetter, onOpenCollection }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const handleCollectionClick = () => {
-    setMobileMenuOpen(false)
-    if (sessionUser) {
-      onOpenCollection()
-      return
-    }
-
-    onLogin()
-  }
-
   return (
     <div className="landing-page">
       <div className={`landing-mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
@@ -706,9 +696,6 @@ function LandingView({ sessionUser, onLogin, onCreateLetter, onOpenCollection })
         <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)}>
           使い方
         </a>
-        <button type="button" onClick={handleCollectionClick}>
-          コレクション
-        </button>
         <a href="#faq-lite" onClick={() => setMobileMenuOpen(false)}>
           よくある質問
         </a>
@@ -716,13 +703,10 @@ function LandingView({ sessionUser, onLogin, onCreateLetter, onOpenCollection })
 
       <nav className="landing-nav">
         <button className="landing-nav-logo" type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          DIGITAL LETTER
+          OMOI LETTER
         </button>
         <div className="landing-nav-links">
           <a href="#how-it-works">使い方</a>
-          <button type="button" onClick={sessionUser ? onOpenCollection : onLogin}>
-            コレクション
-          </button>
           <a href="#faq-lite">よくある質問</a>
         </div>
         <button className="landing-nav-hamburger" type="button" onClick={() => setMobileMenuOpen(true)}>
@@ -734,32 +718,31 @@ function LandingView({ sessionUser, onLogin, onCreateLetter, onOpenCollection })
 
       <section className="landing-hero">
         <div className="landing-hero-left">
-          <p className="landing-hero-eyebrow">Digital Letter</p>
+          <p className="landing-hero-eyebrow">Omoi Letter</p>
           <h1 className="landing-hero-title">
-            言葉を、
+            あなたの想いを
             <br />
-            ちゃんと
             <em>手紙</em>
-            として
-            <br />
-            届ける。
+            で届ける。
           </h1>
           <p className="landing-hero-sub">
-            アプリを入れなくても、
+            手紙だからこそ、伝わる想いがある。
             <br />
-            リンクひとつで気持ちを渡せる。
+            手紙より気軽に、手紙のようにあたたかく。
             <br />
-            書いた言葉は、あとからそっと読み返せます。
+            あなたの想いを、ちゃんと届くかたちで。
+            <br />
+            届いた想いは、あとからそっと読み返せます。
           </p>
           <div className="landing-hero-actions">
             <button className="landing-btn-primary" type="button" onClick={onCreateLetter}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                 <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
               </svg>
-              手紙をつくる
+              手紙を綴る
             </button>
             <button className="landing-btn-secondary" type="button" onClick={sessionUser ? onOpenCollection : onLogin}>
-              {sessionUser ? 'コレクションを見る' : 'ログイン'}
+              {sessionUser ? '宝箱を開ける' : 'ログイン'}
             </button>
           </div>
         </div>
@@ -865,14 +848,14 @@ function LandingView({ sessionUser, onLogin, onCreateLetter, onOpenCollection })
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
             </svg>
-            手紙をつくる
+            手紙を綴る
           </button>
         </div>
       </section>
 
       <footer className="landing-footer">
-        <span className="landing-footer-logo">DIGITAL LETTER</span>
-        <span className="landing-footer-copy">© 2026 Digital Letter. All rights reserved.</span>
+        <span className="landing-footer-logo">OMOI LETTER</span>
+        <span className="landing-footer-copy">© 2026 Omoi Letter. All rights reserved.</span>
       </footer>
     </div>
   )

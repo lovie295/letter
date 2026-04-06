@@ -195,6 +195,9 @@ button {
   font-style: normal;
   color: var(--landing-brown-warm);
   position: relative;
+  font-family: 'Zen Kurenaido', cursive;
+  font-weight: 400;
+  letter-spacing: 0.03em;
 }
 
 .landing-hero-title em::after {
