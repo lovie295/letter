@@ -1785,7 +1785,7 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 14px;
-  margin-top: -4px;
+  margin-top: 8px;
 }
 
 .reader-page-indicator {
@@ -2002,6 +2002,55 @@ textarea {
   .letter-message {
     font-size: 1.1rem;
   }
+
+  .collection-reader-modal {
+    width: min(94vw, 430px);
+    padding: 18px 18px 16px;
+    border-radius: 24px;
+  }
+
+  .collection-envelope-stage {
+    min-height: 520px;
+  }
+
+  .collection-envelope-stage .letter-sheet,
+  .collection-envelope-stage .envelope {
+    width: min(94%, 320px);
+    min-height: 430px;
+    padding: 18px;
+  }
+
+  .collection-envelope-stage .letter-message {
+    font-size: 0.98rem;
+    line-height: 1.68;
+  }
+
+  .collection-envelope-stage .letter-recipient {
+    font-size: 1.08rem;
+    margin-bottom: 18px;
+  }
+
+  .collection-envelope-stage .letter-sign {
+    margin-top: 20px;
+    font-size: 1rem;
+  }
+
+  .collection-envelope-stage .reader-pagination {
+    margin-top: -10px;
+    gap: 10px;
+  }
+
+  .collection-envelope-stage .reader-pagination .ghost-button {
+    padding: 10px 16px;
+  }
+
+  .collection-reader-modal .modal-actions {
+    margin-top: 14px;
+  }
+
+  .collection-reader-modal .ghost-button {
+    padding: 10px 18px;
+  }
 }
 
 @media (max-width: 390px) {
@@ -2019,5 +2068,31 @@ textarea {
   .landing-paper-front {
     width: 200px;
     height: 270px;
+  }
+
+  .collection-reader-modal {
+    width: min(95vw, 360px);
+    padding: 14px 14px 14px;
+  }
+
+  .collection-envelope-stage {
+    min-height: 480px;
+  }
+
+  .collection-envelope-stage .letter-sheet,
+  .collection-envelope-stage .envelope {
+    width: min(96%, 286px);
+    min-height: 390px;
+    padding: 16px;
+  }
+
+  .collection-envelope-stage .letter-message {
+    font-size: 0.93rem;
+    line-height: 1.62;
+  }
+
+  .collection-envelope-stage .reader-pagination {
+    flex-wrap: wrap;
+    margin-top: -6px;
   }
 }
